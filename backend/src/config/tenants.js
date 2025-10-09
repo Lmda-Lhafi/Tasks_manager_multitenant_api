@@ -1,0 +1,1 @@
+// Tenant connection helper (placeholder)
