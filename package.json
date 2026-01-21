@@ -1,13 +1,20 @@
 {
+  "_comment": [
+    "don't forget to seed everything(files and scripts)"
+  ],
   "name": "my-app",
   "version": "1.0.0",
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
   "description": "",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "concurrently \"npm run backend\" \"npm run front-end\"",
-    "front-end": "npm --prefix front-end start",
-    "backend": "npm --prefix backend start"
+    "setup": "npm i -w backend && npm i -w frontend",
+    "dev": "concurrently \"npm run backend\" \"npm run frontend\"",
+    "frontend": "npm run dev -w frontend",
+    "backend": "npm run dev -w backend"
   },
   "devDependencies": {
     "concurrently": "^9.2.1"
@@ -16,13 +23,5 @@
   "author": "",
   "license": "ISC",
   "type": "commonjs",
-  "dependencies": {
-    "bcryptjs": "^3.0.2",
-    "cors": "^2.8.5",
-    "dotenv": "^17.2.3",
-    "express": "^5.1.0",
-    "express-validator": "^7.2.1",
-    "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.19.1"
-  }
+  "dependencies": {}
 }
