@@ -1,6 +1,7 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const { errorHandler } = require("./middleware/errorhandler");
+const connectDB = require("./config/db");
 
 dotenv.config();
 
@@ -16,7 +17,13 @@ app.get("/api", (req, res) => {
 });
 
 app.use(errorHandler);
-// Start server
-app.listen(PORT, () => {
-  console.log(`✅ Server running on http://localhost:${PORT}`);
-});
+// Start serverP
+connectDB()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`✅ Server running on http://localhost:${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error("❌ Failed to start server:", err);
+  });
