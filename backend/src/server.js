@@ -1,6 +1,7 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const { errorHandler } = require("./middleware/errorhandler");
+const authroutes = require("./routes/auth.routes");
 const connectDB = require("./config/db");
 
 dotenv.config();
@@ -15,8 +16,10 @@ app.use(express.json());
 app.get("/api", (req, res) => {
   res.json({ message: "Hello from backend 👋", mode: process.env.NODE_ENV });
 });
+app.use("/api/auth", authroutes);
 
 app.use(errorHandler);
+
 // Start serverP
 connectDB()
   .then(() => {

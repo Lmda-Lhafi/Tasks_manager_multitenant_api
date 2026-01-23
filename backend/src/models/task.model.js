@@ -34,9 +34,9 @@ const taskschema = new mongoose.Schema(
 );
 
 // indexes
-taskschema.index({ tenantid: 1, isDeleted: 1 });
-taskschema.index({ tenantid: 1, status: 1, isDeleted: 1 });
-taskschema.index({ tenantid: 1, assignedUsers: 1, isDeleted: 1 });
-taskschema.index({ tenantid: 1, createdBy: 1, isDeleted: 1 });
+taskschema.index({ tenant: 1, isDeleted: 1 });
+taskschema.index({ tenant: 1, status: 1, isDeleted: 1 });
+taskschema.index({ tenant: 1, assignedUsers: 1, isDeleted: 1 });
+taskschema.index({ tenant: 1, createdBy: 1, isDeleted: 1 });
 
 module.exports = mongoose.model("Task", taskschema);

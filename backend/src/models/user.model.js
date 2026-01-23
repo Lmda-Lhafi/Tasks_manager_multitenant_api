@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 
 // future more fields, like: name, profile picture, lastlogin, ...
-const userschema = new mongoose.Schema(
+const userchema = new mongoose.Schema(
   {
     email: {
       type: String,
@@ -29,33 +29,25 @@ const userschema = new mongoose.Schema(
 );
 
 // indexes
-userschema.index({ tenant: 1, isDeleted: 1 });
-userschema.index(
+userchema.index({ tenant: 1, isDeleted: 1 });
+userchema.index(
   { email: 1 },
   { unique: true, partialFilterExpression: { isDeleted: false } },
 );
-userschema.index({ tenant: 1, email: 1, isDeleted: 1 });
+userchema.index({ tenant: 1, email: 1, isDeleted: 1 });
 
 // password hashing
-userschema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
-  try {
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
-  } catch (error) {
-    next(error);
-  }
+userchema.pre("save", async function () {
+  if (!this.isModified("password")) return;
+  
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
 });
 
-userschema.methods.comparePassword = async function (candidatePassword) {
-  try {
-    return await bcrypt.compare(candidatePassword, this.password);
-  } catch (error) {
-    throw error;
-  }
+userchema.methods.comparePassword = async function (candidatePassword) {
+  return await bcrypt.compare(candidatePassword, this.password);
 };
 
-// soft delete helper later.
+// soft delete helper later
 
-module.exports = mongoose.model("User", userschema);
+module.exports = mongoose.model("User", userchema);

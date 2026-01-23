@@ -11,7 +11,7 @@ const authorized = catchAsync(async (req, res, next) => {
 
   const token = authheader.split(" ")[1];
   const decoded = jwt.verify(token, process.env.JWT_SECRET);
-  if (!decoded.id || !decoded.tenantId)
+  if (!decoded.id || !decoded.tenant)
     throw new ApiError(401, "Invalid token format");
 
   const user = await User.findById(decoded.id)
@@ -20,11 +20,11 @@ const authorized = catchAsync(async (req, res, next) => {
   if (!user || !user.isActive || user.isDeleted)
     throw new ApiError(401, "Authentication failed");
 
-  if (!user.tenant || user.tenant._id.toString() !== decoded.tenantId)
+  if (!user.tenant || user.tenant._id.toString() !== decoded.tenant)
     throw new ApiError(401, "Authentication failed");
 
   req.user = decoded.id;
-  req.tenantId = decoded.tenantId;
+  req.tenant = decoded.tenant;
   next();
 });
 
