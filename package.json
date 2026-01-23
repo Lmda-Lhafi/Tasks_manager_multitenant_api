@@ -1,6 +1,7 @@
 {
   "_comment": [
-    "don't forget to seed everything(files and scripts)"
+    "don't forget to seed everything(files and scripts)",
+    "use rate limit later"
   ],
   "name": "my-app",
   "version": "1.0.0",

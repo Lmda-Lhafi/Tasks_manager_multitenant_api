@@ -13,7 +13,7 @@ const userschema = new mongoose.Schema(
     password: { type: String, required: true, minlength: 6 },
     role: { type: String, enum: ["admin", "user"], default: "user" },
     isActive: { type: Boolean, default: true },
-    tenantid: {
+    tenant: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Tenant",
       required: true,
@@ -29,12 +29,15 @@ const userschema = new mongoose.Schema(
 );
 
 // indexes
-userschema.index({ tenantid: 1, isDeleted: 1 });
-userschema.index({ email: 1, isDeleted: 1 }, { unique: true });
-userschema.index({ tenantid: 1, email: 1, isDeleted: 1 });
+userschema.index({ tenant: 1, isDeleted: 1 });
+userschema.index(
+  { email: 1 },
+  { unique: true, partialFilterExpression: { isDeleted: false } },
+);
+userschema.index({ tenant: 1, email: 1, isDeleted: 1 });
 
 // password hashing
-userSchema.pre("save", async function (next) {
+userschema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
   try {
     const salt = await bcrypt.genSalt(10);
@@ -45,7 +48,7 @@ userSchema.pre("save", async function (next) {
   }
 });
 
-userSchema.methods.comparePassword = async function (candidatePassword) {
+userschema.methods.comparePassword = async function (candidatePassword) {
   try {
     return await bcrypt.compare(candidatePassword, this.password);
   } catch (error) {

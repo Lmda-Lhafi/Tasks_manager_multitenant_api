@@ -8,7 +8,7 @@ const taskschema = new mongoose.Schema(
     title: { type: String, required: true, trim: true },
     description: { type: String, trim: true },
     status: { type: String, enum: ["todo", "in-progress", "done"] },
-    tenantid: {
+    tenant: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Tenant",
       required: true,
