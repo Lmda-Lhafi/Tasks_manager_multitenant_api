@@ -31,10 +31,12 @@ const userchema = new mongoose.Schema(
 // indexes
 userchema.index({ tenant: 1, isDeleted: 1 });
 userchema.index(
-  { email: 1 },
-  { unique: true, partialFilterExpression: { isDeleted: false } },
+  { tenant: 1, email: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { isDeleted: false },
+  }
 );
-userchema.index({ tenant: 1, email: 1, isDeleted: 1 });
 
 // password hashing
 userchema.pre("save", async function () {
