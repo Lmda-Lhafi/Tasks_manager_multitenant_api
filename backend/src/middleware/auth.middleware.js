@@ -20,11 +20,14 @@ const authorized = catchAsync(async (req, res, next) => {
   if (!user || !user.isActive || user.isDeleted)
     throw new ApiError(401, "Authentication failed");
 
-  if (!user.tenant || user.tenant._id.toString() !== decoded.tenant)
+  if (
+    !user.tenant ||
+    (decoded.tenant && user.tenant._id.toString() !== decoded.tenant)
+  )
     throw new ApiError(401, "Authentication failed");
 
-  req.user = decoded.id;
-  req.tenant = decoded.tenant;
+  req.user = user;
+  req.tenant = user.tenant ? user.tenant : decoded.tenant;
   next();
 });
 

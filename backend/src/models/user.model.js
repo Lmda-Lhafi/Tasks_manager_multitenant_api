@@ -4,6 +4,7 @@ const bcrypt = require("bcrypt");
 // future more fields, like: name, profile picture, lastlogin, ...
 const userchema = new mongoose.Schema(
   {
+    name: { type: String, trim: true },
     email: {
       type: String,
       required: true,
@@ -35,13 +36,13 @@ userchema.index(
   {
     unique: true,
     partialFilterExpression: { isDeleted: false },
-  }
+  },
 );
 
 // password hashing
 userchema.pre("save", async function () {
   if (!this.isModified("password")) return;
-  
+
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
 });
@@ -49,6 +50,21 @@ userchema.pre("save", async function () {
 userchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
+
+// generate a friendly name from the email.
+userchema.pre("save", function (next) {
+  if (!this.name && this.email) {
+    const local = String(this.email).split("@")[0];
+    const name = local
+      .replace(/[._-]+/g, " ")
+      .split(" ")
+      .filter(Boolean)
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
+    this.name = name;
+  }
+  next();
+});
 
 // soft delete helper later
 

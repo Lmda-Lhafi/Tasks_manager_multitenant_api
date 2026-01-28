@@ -28,6 +28,27 @@ const schemas = {
       }),
     }),
   },
+  user: {
+    inviteUser: Joi.object({
+      email: Joi.string().email().required().messages({
+        "string.email": "Please provide a valid email address",
+        "any.required": "Email is required",
+      }),
+    }),
+    acceptinvite: Joi.object({
+      token: Joi.string().required().messages({
+        "any.required": "Invitation token is required",
+      }),
+      password: Joi.string().min(6).max(128).required().messages({
+        "string.min": "Password must be at least 6 characters",
+        "any.required": "Password is required",
+      }),
+    }),
+    updateUserStatus: Joi.object({
+      isActive: Joi.boolean().optional(),
+      isDeleted: Joi.boolean().optional(),
+    }),
+  },
 };
 
 // Resolve either a direct schema object or a dot-separated path like "auth.registerTenant"
@@ -36,10 +57,7 @@ const getSchemaByPath = (schemaPath) => {
   if (typeof schemaPath !== "string") return schemaPath; // already a schema object
   return schemaPath
     .split(".")
-    .reduce(
-      (acc, part) => (acc && acc[part] ? acc[part] : null),
-      schemas,
-    );
+    .reduce((acc, part) => (acc && acc[part] ? acc[part] : null), schemas);
 };
 
 exports.validate = (schemaName, source = "body") => {
