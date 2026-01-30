@@ -4,7 +4,7 @@ const Tenant = require("../models/tenant.model");
 const sendemail = require("../config/mailer");
 const jwt = require("jsonwebtoken");
 
-// Admin invites users
+
 // @route   POST /api/users/invite
 // @desc    Invite a new user to the tenant
 // @access  Admin
@@ -66,8 +66,7 @@ exports.adduser = catchAsync(async (req, res, next) => {
   });
 });
 
-// user accepts invite
-// @route   POST /api/users/accept-invite
+// @route   POST /api/user/accept-invite
 // @desc    Accept user invitation
 // @access  Public
 exports.acceptinvite = catchAsync(async (req, res, next) => {
@@ -121,8 +120,7 @@ exports.acceptinvite = catchAsync(async (req, res, next) => {
   });
 });
 
-// get all users in tenant (only admin)
-// @route   GET /api/users
+// @route   GET /api/user
 // @desc    Get all users in the tenant
 // @access  Admin
 exports.getallusers = catchAsync(async (req, res, next) => {
@@ -138,26 +136,28 @@ exports.getallusers = catchAsync(async (req, res, next) => {
   });
 });
 
-// update user status (suspended/active) (only admin)
-// @route   PATCH /api/users/:id/status
+// @route   PATCH /api/user/:id/status
 // @desc    Update user status (supports isActive and isDeleted)
 // @access  Admin
 exports.updateuserstatus = catchAsync(async (req, res, next) => {
   const { id } = req.params;
   const { isActive, isDeleted } = req.body;
 
-  // normalize tenant id whether req.tenant is an object or a string
   const tenantId = req.tenant && req.tenant._id ? req.tenant._id : req.tenant;
 
-  // Build update object
   const update = {};
   if (typeof isDeleted !== "undefined") {
     update.isDeleted = !!isDeleted;
-    // when deleting a user, also deactivate
-    if (isDeleted) update.isActive = false;
+    if (isDeleted) {
+      update.isActive = false;
+      update.deletedAt = new Date();
+      update.deletedBy = req.user && req.user._id ? req.user._id : null;
+    } else {
+      update.deletedAt = null;
+      update.deletedBy = null;
+    }
   }
   if (typeof isActive !== "undefined") {
-    // only apply isActive if not deleting the user (deleting forces inactive)
     if (!update.isDeleted) update.isActive = !!isActive;
   }
 
@@ -165,15 +165,15 @@ exports.updateuserstatus = catchAsync(async (req, res, next) => {
     return next(new ApiError(400, "No valid fields provided for update"));
   }
 
-  // If un-deleting (isDeleted: false) allow match even if currently isDeleted:true
   const findFilter = { _id: id, tenant: tenantId };
-  if (!update.isDeleted) findFilter.isDeleted = false;
+  if (!(typeof isDeleted !== "undefined" && isDeleted === false)) {
+    findFilter.isDeleted = false;
+  }
 
-  const updatedUser = await User.findOneAndUpdate(
-    findFilter,
-    update,
-    { new: true, runValidators: true },
-  ).select("-password");
+  const updatedUser = await User.findOneAndUpdate(findFilter, update, {
+    new: true,
+    runValidators: true,
+  }).select("-password");
 
   if (!updatedUser) {
     return next(new ApiError(404, "User not found or access denied"));

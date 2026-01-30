@@ -1,7 +1,8 @@
 {
   "_comment": [
     "don't forget to seed everything(files and scripts)",
-    "use rate limit later"
+    "use rate limit later",
+    "pagination for get all tasks and users"
   ],
   "name": "my-app",
   "version": "1.0.0",

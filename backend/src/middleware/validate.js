@@ -49,6 +49,41 @@ const schemas = {
       isDeleted: Joi.boolean().optional(),
     }),
   },
+  task: {
+    createTask: Joi.object({
+      title: Joi.string().min(1).max(200).required().messages({
+        "string.min": "Task title must be at least 1 character",
+        "string.max": "Task title cannot exceed 200 characters",
+        "any.required": "Task title is required",
+      }),
+      description: Joi.string().max(1000).optional().allow("").messages({
+        "string.max": "Task description cannot exceed 1000 characters",
+      }),
+      status: Joi.string()
+        .valid("todo", "in-progress", "done")
+        .required()
+        .messages({
+          "any.only": "Task status must be one of: todo, in-progress, done",
+          "any.required": "Task status is required",
+        }),
+      assignedUsers: Joi.array().items(Joi.string()).default([]),
+    }),
+    updateTask: Joi.object({
+      title: Joi.string().min(1).max(200).optional().messages({
+        "string.min": "Task title must be at least 1 character",
+        "string.max": "Task title cannot exceed 200 characters",
+      }),
+      description: Joi.string().max(1000).optional().allow("").messages({
+        "string.max": "Task description cannot exceed 1000 characters",
+      }),
+      status: Joi.string()
+        .valid("todo", "in-progress", "done")
+        .optional()
+        .messages({
+          "any.only": "Task status must be one of: todo, in-progress, done",
+        }),
+    }),
+  },
 };
 
 // Resolve either a direct schema object or a dot-separated path like "auth.registerTenant"

@@ -1,5 +1,3 @@
-// Task model (tenant) placeholder
-
 const mongoose = require("mongoose");
 
 // future more fields, like: priority, duedate, tags, ...
@@ -14,8 +12,7 @@ const taskschema = new mongoose.Schema(
       required: true,
     },
     assignedUsers: {
-      type: [mongoose.Schema.Types.ObjectId],
-      ref: "User",
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
       default: [],
       index: true,
     },

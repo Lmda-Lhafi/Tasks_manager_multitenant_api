@@ -2,6 +2,7 @@ const express = require("express");
 const { errorHandler } = require("./middleware/errorhandler");
 const authroutes = require("./routes/auth.route");
 const userroutes = require("./routes/user.route");
+const taskroutes = require("./routes/task.route");
 const connectDB = require("./config/db");
 require("dotenv").config();
 
@@ -17,6 +18,7 @@ app.get("/api", (req, res) => {
 });
 app.use("/api/auth", authroutes);
 app.use("/api/user", userroutes);
+app.use("/api/task", taskroutes);
 
 app.use(errorHandler);
 
