@@ -18,4 +18,5 @@ const tenantschema = new mongoose.Schema(
 tenantschema.index({ isDeleted: 1, status: 1 });
 tenantschema.index({ status: 1 });
 tenantschema.index({ deletedAt: 1 });
+
 module.exports = mongoose.model("Tenant", tenantschema);

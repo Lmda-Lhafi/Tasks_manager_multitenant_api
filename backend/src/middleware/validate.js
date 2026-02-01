@@ -84,6 +84,15 @@ const schemas = {
         }),
     }),
   },
+  tenant: {
+    updateTenant: Joi.object({
+      name: Joi.string().min(2).max(100).required().messages({
+        "string.min": "Tenant name must be at least 2 characters",
+        "string.max": "Tenant name cannot exceed 100 characters",
+        "any.required": "Tenant name is required",
+      }),
+    }),
+  },
 };
 
 // Resolve either a direct schema object or a dot-separated path like "auth.registerTenant"

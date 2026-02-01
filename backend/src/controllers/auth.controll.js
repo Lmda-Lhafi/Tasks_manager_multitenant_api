@@ -4,7 +4,6 @@ const { catchAsync, ApiError } = require("../middleware/errorhandler");
 const jwt = require("jsonwebtoken");
 
 
-//verify email & send verification email for new registration
 // @route   POST /api/auth/register-tenant
 // @desc    Register a new user
 // @access  Public
@@ -58,7 +57,6 @@ exports.registerTenant = catchAsync(async (req, res) => {
   });
 });
 
-//login (admin and regular user)
 // @route   POST /api/auth/login
 // @desc    Login user
 // @access  Public
