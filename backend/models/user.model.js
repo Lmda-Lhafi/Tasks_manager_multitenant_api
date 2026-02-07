@@ -39,32 +39,29 @@ userchema.index(
   },
 );
 
-// password hashing
 userchema.pre("save", async function () {
-  if (!this.isModified("password")) return;
-
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
+  // generate a friendly name from the email
+  if (!this.name && this.email) {
+    const local = String(this.email).split("@")[0];
+    this.name = local
+      .replace(/[._-]+/g, " ")
+      .split(" ")
+      .filter(Boolean)
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
+  }
+  
+  // password hashing
+  if (this.isModified("password")) {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+  }
 });
 
 userchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
-// generate a friendly name from the email.
-userchema.pre("save", function (next) {
-  if (!this.name && this.email) {
-    const local = String(this.email).split("@")[0];
-    const name = local
-      .replace(/[._-]+/g, " ")
-      .split(" ")
-      .filter(Boolean)
-      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-      .join(" ");
-    this.name = name;
-  }
-  next();
-});
 
 // soft delete helper later
 

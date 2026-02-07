@@ -3,7 +3,8 @@
     "don't forget to seed everything(files and scripts)",
     "use rate limit later",
     "pagination for get all tasks and users",
-    "token in header pr http only cookie"
+    "token in header or http only cookie",
+    "after what above chenge the localstorage to httpOnly Cookies in frontend"
   ],
   "name": "my-app",
   "version": "1.0.0",

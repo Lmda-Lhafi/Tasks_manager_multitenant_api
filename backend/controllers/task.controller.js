@@ -7,7 +7,7 @@ const { catchAsync, ApiError } = require("../middleware/errorhandler");
 // @access  Private (admin only)
 exports.createTask = catchAsync(async (req, res, next) => {
   const { title, description, status, assignedUsers } = req.body;
-  const tenantId = req.user.tenant;
+  const tenantId = req.tenant;
   const createdBy = req.user.id;
 
   if (assignedUsers && assignedUsers.length > 0) {
@@ -46,7 +46,7 @@ exports.createTask = catchAsync(async (req, res, next) => {
 // @access  Private (admin only)
 exports.updatetask = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  const tenantId = req.user.tenant;
+  const tenantId = req.tenant;
   const { title, description, status, assignedUsers } = req.body;
   const task = await Task.findOne({
     _id: id,
@@ -95,7 +95,7 @@ exports.updatetask = catchAsync(async (req, res, next) => {
 // @desc    Get all tasks in the tenant
 // @access  Admin
 exports.getAllTasks = catchAsync(async (req, res, next) => {
-  const tenantId = req.user.tenant;
+  const tenantId = req.tenant;
   const { status, assignedTo } = req.query;
 
   const filter = { tenant: tenantId, isDeleted: false };
@@ -119,7 +119,7 @@ exports.getAllTasks = catchAsync(async (req, res, next) => {
 // @access  User
 exports.getmytasks = catchAsync(async (req, res, next) => {
   const userId = req.user.id;
-  const tenantId = req.user.tenant;
+  const tenantId = req.tenant;
 
   const tasks = await Task.find({
     tenant: tenantId,
@@ -143,7 +143,7 @@ exports.getmytasks = catchAsync(async (req, res, next) => {
 // @access  Private (admin only)
 exports.deletetask = catchAsync(async (req, res, next) => {
   const { id } = req.params;
-  const tenantId = req.user.tenant;
+  const tenantId = req.tenant;
 
   const task = await Task.findOneAndUpdate(
     {

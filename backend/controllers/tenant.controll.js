@@ -29,7 +29,7 @@ exports.updatetenantinfo = catchAsync(async (req, res, next) => {
   const tenantId = req.params.id;
   const { name } = req.body;
 
-  const adminTenantId = extractId(req.user && req.user.tenant);
+  const adminTenantId = extractId(req.tenant);
   if (tenantId.toString() !== adminTenantId.toString()) {
     return next(new ApiError("Access denied", 403));
   }

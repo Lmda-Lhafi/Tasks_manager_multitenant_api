@@ -3,7 +3,7 @@ const Tenant = require("../models/tenant.model");
 const { catchAsync, ApiError } = require("../middleware/errorhandler");
 const jwt = require("jsonwebtoken");
 
-
+// there a issue here (the tenant saved even if there an error || )
 // @route   POST /api/auth/register-tenant
 // @desc    Register a new user
 // @access  Public
@@ -47,13 +47,14 @@ exports.registerTenant = catchAsync(async (req, res) => {
     token,
     user: {
       id: user._id,
+      name: user.name,
       email: user.email,
-      role: user.role
+      role: user.role,
     },
     tenant: {
       id: tenant._id,
-      name: tenant.name
-    }
+      name: tenant.name,
+    },
   });
 });
 
@@ -63,7 +64,9 @@ exports.registerTenant = catchAsync(async (req, res) => {
 exports.login = catchAsync(async (req, res) => {
   const { email, password } = req.body;
 
-  const user = await User.findOne({ email, isDeleted: false }).populate("tenant");
+  const user = await User.findOne({ email, isDeleted: false }).populate(
+    "tenant",
+  );
   if (!user || !(await user.comparePassword(password))) {
     throw new ApiError(401, "Invalid email or password");
   }
@@ -87,19 +90,20 @@ exports.login = catchAsync(async (req, res) => {
       expiresIn: "1h",
     },
   );
-  // remove ids
+  // return user and tenant as separate objects
   res.status(200).json({
     message: "Login successful",
     token,
     user: {
       id: user._id,
+      name: user.name,
       email: user.email,
       role: user.role,
-      tenant: {
-        id: user.tenant._id,
-        name: user.tenant.name
-      }
-    }
+    },
+    tenant: {
+      id: user.tenant._id,
+      name: user.tenant.name,
+    },
   });
 });
 

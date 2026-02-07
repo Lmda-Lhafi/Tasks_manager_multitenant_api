@@ -2,7 +2,10 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/user.model");
 const { ApiError, catchAsync } = require("./errorhandler");
-require("dotenv").config();
+const path = require("path");
+const dotenv = require("dotenv");
+
+dotenv.config({ path: path.join(__dirname, "../../.env") });
 
 const authorized = catchAsync(async (req, res, next) => {
   const authheader = req.headers.authorization;
@@ -26,8 +29,14 @@ const authorized = catchAsync(async (req, res, next) => {
   )
     throw new ApiError(401, "Authentication failed");
 
+  // separate tenant from user: set req.tenant as tenant id, remove tenant from user object
+  const tenantId = user.tenant._id
+    ? user.tenant._id.toString()
+    : user.tenant.toString();
+  // remove tenant property from user to keep user info separate
+  user.tenant = undefined;
   req.user = user;
-  req.tenant = user.tenant ? user.tenant : decoded.tenant;
+  req.tenant = tenantId;
   next();
 });
 
