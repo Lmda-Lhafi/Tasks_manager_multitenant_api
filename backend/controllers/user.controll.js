@@ -64,7 +64,7 @@ exports.adduser = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: "success",
     message: "Invitation sent successfully",
-    InviteLink: invitelink,
+    token: jwtToken, // include token in response for testing purposes (in production, you might want to omit this)
   });
 });
 
@@ -144,6 +144,14 @@ exports.getallusers = catchAsync(async (req, res, next) => {
 exports.updateuserstatus = catchAsync(async (req, res, next) => {
   const { id } = req.params;
   const { isActive, isDeleted } = req.body;
+
+  // Prevent users (including admins) from deactivating or deleting their own account
+  if (String(id) === String(req.user && (req.user._id || req.user.id)) && String(req.user?.role) === "admin") {
+    if ((typeof isDeleted !== "undefined" && isDeleted === true) ||
+        (typeof isActive !== "undefined" && isActive === false)) {
+      return next(new ApiError(403, "Admins cannot deactivate or delete your own account"));
+    }
+  }
 
   const tenantId = req.tenant && req.tenant._id ? req.tenant._id : req.tenant;
 

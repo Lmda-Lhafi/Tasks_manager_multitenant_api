@@ -25,6 +25,66 @@ export default function Auth() {
     setError("");
   };
 
+  // Restore auth from localStorage on mount
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const storedUser = localStorage.getItem("user");
+    const storedTenant = localStorage.getItem("tenant");
+
+    if (token) {
+      try {
+        api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      } catch (e) {
+      }
+    }
+
+    if (storedUser) {
+      try {
+        setUserinfo(JSON.parse(storedUser));
+        setTenantinfo(storedTenant ? JSON.parse(storedTenant) : null);
+        setLogged(true);
+      } catch (e) {
+        localStorage.removeItem("user");
+        localStorage.removeItem("tenant");
+        setLogged(false);
+      }
+    } else if (token) {
+      (async () => {
+        try {
+          const res = await api.get("/auth/me");
+          if (res.status === 200) {
+            setLogged(true);
+            setUserinfo(res.data.user || res.data);
+            setTenantinfo(res.data.tenant || null);
+            localStorage.setItem(
+              "user",
+              JSON.stringify(res.data.user || res.data),
+            );
+            if (res.data.tenant)
+              localStorage.setItem("tenant", JSON.stringify(res.data.tenant));
+          } else {
+            // invalid -> cleanup
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            localStorage.removeItem("tenant");
+            try {
+              delete api.defaults.headers.common["Authorization"];
+            } catch (e) {}
+            setLogged(false);
+          }
+        } catch (err) {
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          localStorage.removeItem("tenant");
+          try {
+            delete api.defaults.headers.common["Authorization"];
+          } catch (e) {}
+          setLogged(false);
+        }
+      })();
+    }
+  }, []);
+
   // login function
   const handleLogin = async (e) => {
     if (e) {
@@ -43,11 +103,22 @@ export default function Auth() {
         setUserinfo(res.data.user);
         setTenantinfo(res.data.tenant);
         if (res.data.token) {
-          localStorage.setItem('token', res.data.token);
+          localStorage.setItem("token", res.data.token);
+          try {
+            api.defaults.headers.common["Authorization"] =
+              `Bearer ${res.data.token}`;
+          } catch (e) {}
         }
+        // persist user/tenant
+        localStorage.setItem("user", JSON.stringify(res.data.user));
+        if (res.data.tenant)
+          localStorage.setItem("tenant", JSON.stringify(res.data.tenant));
+
         setModalopen(false);
         setLoginemail("");
         setLoginpassword("");
+
+        window.location.reload();
       }
     } catch (error) {
       console.log("Login error:", error);
@@ -76,12 +147,23 @@ export default function Auth() {
         setUserinfo(res.data.user);
         setTenantinfo(res.data.tenant);
         if (res.data.token) {
-          localStorage.setItem('token', res.data.token);
+          localStorage.setItem("token", res.data.token);
+          try {
+            api.defaults.headers.common["Authorization"] =
+              `Bearer ${res.data.token}`;
+          } catch (e) {}
         }
+        // persist user/tenant
+        localStorage.setItem("user", JSON.stringify(res.data.user));
+        if (res.data.tenant)
+          localStorage.setItem("tenant", JSON.stringify(res.data.tenant));
+
         setModalopen(false);
         setname("");
         setRegisteremail("");
         setRegisterpassword("");
+
+        window.location.reload();
       }
     } catch (error) {
       console.log("Register error:", error);
@@ -97,12 +179,18 @@ export default function Auth() {
     setUserinfo(null);
     setTenantinfo(null);
     setModalopen(false);
-    localStorage.removeItem('token');
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    localStorage.removeItem("tenant");
+    try {
+      delete api.defaults.headers.common["Authorization"];
+      window.location.reload();
+    } catch (e) {}
   };
 
   return (
     <div className="auth-container">
-      <button 
+      <button
         className={`auth-button ${logged ? "logged-in" : "logged-out"}`}
         onClick={handleClick}
       >
@@ -110,20 +198,23 @@ export default function Auth() {
       </button>
 
       {modalopen && (
-        <div className="auth-modal" onClick={(e) => {
-          if (e.target.className === 'auth-modal') {
-            setModalopen(false);
-          }
-        }}>
+        <div
+          className="auth-modal"
+          onClick={(e) => {
+            if (e.target.className === "auth-modal") {
+              setModalopen(false);
+            }
+          }}
+        >
           <div className="modal-content">
-            <button 
-              className="close-button" 
+            <button
+              className="close-button"
               type="button"
               onClick={() => setModalopen(false)}
             >
               ×
             </button>
-            
+
             {logged ? (
               <div className="user-info">
                 <h2>User Info</h2>
@@ -133,7 +224,9 @@ export default function Auth() {
                 <p>Role: {userinfo?.role}</p>
                 <p>Tenant ID: {tenantinfo?.id}</p>
                 <p>Tenant Name: {tenantinfo?.name}</p>
-                <button type="button" onClick={handleLogout}>Logout</button>
+                <button type="button" onClick={handleLogout}>
+                  Logout
+                </button>
               </div>
             ) : (
               <>
@@ -143,8 +236,8 @@ export default function Auth() {
                     <form onSubmit={handleLogin}>
                       <div className="form-group">
                         <label>Email:</label>
-                        <input 
-                          type="email" 
+                        <input
+                          type="email"
                           value={Loginemail}
                           onChange={(e) => setLoginemail(e.target.value)}
                           required
@@ -153,7 +246,7 @@ export default function Auth() {
                       </div>
                       <div className="form-group">
                         <label>Password:</label>
-                        <input 
+                        <input
                           type="password"
                           value={Loginpassword}
                           onChange={(e) => setLoginpassword(e.target.value)}
@@ -165,8 +258,8 @@ export default function Auth() {
                       <button type="submit" disabled={loading}>
                         {loading ? "Loading..." : "Login"}
                       </button>
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         onClick={(e) => {
                           e.preventDefault();
                           setShowRegister(true);
@@ -183,7 +276,7 @@ export default function Auth() {
                     <form onSubmit={handleRegister}>
                       <div className="form-group">
                         <label>Tenant Name:</label>
-                        <input 
+                        <input
                           type="text"
                           value={name}
                           onChange={(e) => setname(e.target.value)}
@@ -192,7 +285,7 @@ export default function Auth() {
                       </div>
                       <div className="form-group">
                         <label>Email:</label>
-                        <input 
+                        <input
                           type="email"
                           value={Registeremail}
                           onChange={(e) => setRegisteremail(e.target.value)}
@@ -202,7 +295,7 @@ export default function Auth() {
                       </div>
                       <div className="form-group">
                         <label>Password:</label>
-                        <input 
+                        <input
                           type="password"
                           value={Registerpassword}
                           onChange={(e) => setRegisterpassword(e.target.value)}
@@ -214,8 +307,8 @@ export default function Auth() {
                       <button type="submit" disabled={loading}>
                         {loading ? "Loading..." : "Create an account"}
                       </button>
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         onClick={(e) => {
                           e.preventDefault();
                           setShowRegister(false);
