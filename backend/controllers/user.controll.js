@@ -4,6 +4,8 @@ const Tenant = require("../models/tenant.model");
 const sendemail = require("../config/mailer");
 const jwt = require("jsonwebtoken");
 
+// get user info.
+// update user info (name, password, etc.) (user can update their own info, admin can update any user in their tenant)
 
 // @route   POST /api/users/invite
 // @desc    Invite a new user to the tenant
