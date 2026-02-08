@@ -10,6 +10,8 @@ exports.createTask = catchAsync(async (req, res, next) => {
   const tenantId = req.tenant;
   const createdBy = req.user.id;
 
+  // keep only valid active/non-deleted users for assignment
+  let validAssigned = [];
   if (assignedUsers && assignedUsers.length > 0) {
     const users = await User.find({
       _id: { $in: assignedUsers },
@@ -17,10 +19,7 @@ exports.createTask = catchAsync(async (req, res, next) => {
       isActive: true,
       isDeleted: false,
     });
-
-    if (users.length !== assignedUsers.length) {
-      return next(new ApiError(400, "One or more assigned users are invalid"));
-    }
+    validAssigned = users.map((u) => u._id);
   }
 
   const newTask = await Task.create({
@@ -28,12 +27,12 @@ exports.createTask = catchAsync(async (req, res, next) => {
     description,
     status,
     tenant: tenantId,
-    assignedUsers: assignedUsers || [],
+    assignedUsers: validAssigned,
     createdBy,
   });
   await newTask.populate([
-    { path: "assignedUsers", select: "email role" },
-    { path: "createdBy", select: "email" },
+    { path: "assignedUsers", select: "name email role" },
+    { path: "createdBy", select: "name email" },
   ]);
   res.status(201).json({
     status: "success",
@@ -57,6 +56,7 @@ exports.updatetask = catchAsync(async (req, res, next) => {
     return next(new ApiError(404, "Task not found"));
   }
 
+  // filter assignedUsers to valid active/non-deleted users (ignore invalid ids)
   if (assignedUsers && assignedUsers.length > 0) {
     const users = await User.find({
       _id: { $in: assignedUsers },
@@ -64,23 +64,19 @@ exports.updatetask = catchAsync(async (req, res, next) => {
       isActive: true,
       isDeleted: false,
     });
-
-    if (users.length !== assignedUsers.length) {
-      return next(new ApiError(400, "Invalid assigned users"));
-    }
+    task.assignedUsers = users.map((u) => u._id);
   }
 
   // Update fields
   if (title) task.title = title;
   if (description !== undefined) task.description = description;
   if (status) task.status = status;
-  if (assignedUsers) task.assignedUsers = assignedUsers;
 
   await task.save();
 
   await task.populate([
-    { path: "assignedUsers", select: "email role" },
-    { path: "createdBy", select: "email" },
+    { path: "assignedUsers", select: "name email role" },
+    { path: "createdBy", select: "name email" },
   ]);
 
   res.status(200).json({
@@ -103,8 +99,8 @@ exports.getAllTasks = catchAsync(async (req, res, next) => {
   if (assignedTo) filter.assignedUsers = assignedTo;
   const tasks = await Task.find(filter)
     .populate([
-      { path: "assignedUsers", select: "email role" },
-      { path: "createdBy", select: "email" },
+      { path: "assignedUsers", select: "name email role" },
+      { path: "createdBy", select: "name email" },
     ])
     .sort({ createdAt: -1 });
   res.status(200).json({
@@ -127,8 +123,8 @@ exports.getmytasks = catchAsync(async (req, res, next) => {
     isDeleted: false,
   })
     .populate([
-      { path: "assignedUsers", select: "email role" },
-      { path: "createdBy", select: "email" },
+      { path: "assignedUsers", select: "name email role" },
+      { path: "createdBy", select: "name email" },
     ])
     .sort({ createdAt: -1 });
   res.status(200).json({
@@ -156,7 +152,7 @@ exports.deletetask = catchAsync(async (req, res, next) => {
       deletedAt: new Date(),
       deletedBy: req.user._id,
     },
-    { new: true },
+    { new: true }
   );
   if (!task) {
     return next(new ApiError(404, "Task not found"));
@@ -164,5 +160,54 @@ exports.deletetask = catchAsync(async (req, res, next) => {
   res.status(200).json({
     status: "success",
     message: "Task deleted successfully",
+  });
+});
+
+// @route   PATCH /api/task/:id/status
+// @desc    Update only the status of a task (assigned users or admin)
+// @access  Private
+exports.updateTaskStatus = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+  const { status } = req.body;
+  const tenantId = req.tenant;
+  const userId = req.user.id;
+
+  if (!status) {
+    return next(new ApiError(400, "Status is required"));
+  }
+
+  const allowed = ["todo", "in-progress", "done"];
+  if (!allowed.includes(status)) {
+    return next(new ApiError(400, "Invalid status"));
+  }
+
+  const task = await Task.findOne({
+    _id: id,
+    tenant: tenantId,
+    isDeleted: false,
+  });
+  if (!task) {
+    return next(new ApiError(404, "Task not found"));
+  }
+
+  const isAssigned = (task.assignedUsers || []).some((u) => String(u) === String(userId) || String(u?._id) === String(userId));
+  const isAdminUser = req.user?.role === "admin" || (Array.isArray(req.user?.roles) && req.user.roles.includes("admin"));
+
+  if (!isAssigned && !isAdminUser) {
+    return next(new ApiError(403, "Not authorized to update task status"));
+  }
+
+  task.status = status;
+  await task.save();
+
+  await task.populate([
+    { path: "assignedUsers", select: "name email role" },
+    { path: "createdBy", select: "name email" },
+  ]);
+
+  res.status(200).json({
+    status: "success",
+    message: "Task status updated successfully",
+    task,
   });
 });

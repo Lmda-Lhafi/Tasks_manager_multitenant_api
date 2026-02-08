@@ -232,7 +232,6 @@ export default function User({ userinfo }) {
 
   return (
     <div className="user-container">
-      <h1>User Management</h1>
 
       {/* Error/Success messages */}
       {error && <p className="error-message">{error}</p>}
@@ -241,6 +240,7 @@ export default function User({ userinfo }) {
       {/* Admin only section */}
       {isAdmin ? (
         <>
+              <h1>User Management</h1>
           {/* Invite user button */}
           <div className="invite-section">
             <button
@@ -356,49 +356,9 @@ export default function User({ userinfo }) {
           )}
         </>
       ) : (
-        /* Regular user view */
-        <div className="user-view">
-          <h2>Your Profile</h2>
-          <div className="profile-info">
-            <p>User ID: {effectiveUser?.id || effectiveUser?._id}</p>
-            <p>Email: {effectiveUser?.email}</p>
-            <p>Role: {effectiveUser?.role}</p>
-          </div>
+        <div>
 
-          {/* Accept Invitation Section */}
-          <div className="accept-invite-section">
-            <h3>Accept Invitation</h3>
-            <p>
-              If you received an invitation link, complete your registration below:
-            </p>
-            <form onSubmit={handleAcceptInvite}>
-              <div className="form-group">
-                <label>Invitation Token:</label>
-                <input
-                  type="text"
-                  value={inviteToken}
-                  onChange={(e) => setInviteToken(e.target.value)}
-                  required
-                  placeholder="Enter your invitation token"
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Password:</label>
-                <input
-                  type="password"
-                  value={acceptPassword}
-                  onChange={(e) => setAcceptPassword(e.target.value)}
-                  required
-                  placeholder="Create a password"
-                />
-              </div>
-
-              <button type="submit" disabled={loading}>
-                {loading ? "Processing..." : "Accept Invitation"}
-              </button>
-            </form>
-          </div>
+          {/* accept-invite removed for authenticated users */}
         </div>
       )}
     </div>
