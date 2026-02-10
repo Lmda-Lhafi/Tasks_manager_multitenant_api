@@ -1,0 +1,169 @@
+/* ==================================================
+   Organized stylesheet for frontend/src/index.css
+   Sections: Shared variables & components, Auth, User, Task, Modals, Responsive
+   ================================================== */
+
+/* ----------------------------------
+   Shared / Utility styles
+   ---------------------------------- */
+:root {
+  --primary: #007bff;
+  --primary-dark: #0056b3;
+  --success: #28a745;
+  --danger: #dc3545;
+  --muted: #eee;
+  --content-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Generic modal overlay used across features */
+.modal,
+.auth-modal,
+.invite-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+}
+
+/* Core modal content (base) */
+.modal-content {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  width: 90%;
+  max-width: 500px;
+  position: relative;
+  animation: slideDown 0.3s ease-out;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Smaller modal variants for auth/invite forms */
+.auth-modal .modal-content,
+.invite-modal .modal-content {
+  max-width: 400px;
+}
+
+/* Modal headings and close control */
+.modal-content h2 { margin: 0 0 20px 0; text-align: center; color: #333; }
+.close-button,
+.close { position: absolute; top: 10px; right: 15px; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #666; line-height: 1; }
+.close-button:hover, .close:hover { color: #000; }
+
+/* Form groups and inputs (shared) */
+.form-group { margin-bottom: 15px; display: flex; flex-direction: column; }
+.form-group label { margin-bottom: 5px; font-weight: 600; color: #555; font-size: 0.9rem; }
+.form-group input,
+.modal-content input[type="text"],
+.modal-content textarea,
+.modal-content select { padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; box-sizing: border-box; }
+.form-group input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.15); }
+.modal-content textarea { min-height: 100px; resize: vertical; font-family: inherit; }
+
+/* Buttons */
+button[type="submit"] { width: 100%; padding: 12px; background-color: var(--primary); color: #fff; border: none; border-radius: 4px; font-size: 1rem; cursor: pointer; font-weight: 600; }
+button[type="submit"]:disabled { background-color: #ccc; cursor: not-allowed; }
+button[type="submit"]:hover:not(:disabled) { background-color: var(--primary-dark); }
+.modal-content button[type="button"]:not(.close-button):not(.logout-btn) { display:block; width:100%; background:none; border:none; color:var(--primary); margin-top:15px; cursor:pointer; font-size:0.9rem; text-decoration:underline; }
+.modal-content button[type="button"]:not(.close-button):hover { color: var(--primary-dark); }
+
+/* Feedback messages (shared) */
+.error-message { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 10px; border-radius: 4px; margin-bottom: 15px; text-align: center; }
+.success-message { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; padding: 10px; border-radius: 4px; margin-bottom: 15px; }
+
+/* ----------------------------------
+   Auth component styles
+   ---------------------------------- */
+.auth-container { display: inline-block; }
+.auth-button { padding: 10px 20px; font-size: 16px; border: none; border-radius: 5px; cursor: pointer; transition: background-color 0.3s ease; font-weight: 600; }
+.auth-button.logged-out { background-color: var(--primary); color: white; }
+.auth-button.logged-out:hover { background-color: var(--primary-dark); }
+.auth-button.logged-in { background-color: var(--success); color: white; }
+.auth-button.logged-in:hover { background-color: #218838; }
+
+/* Specific modal paddings for auth forms */
+.auth-modal .modal-content { padding: 2rem; }
+
+/* User info block inside auth modal */
+.user-info { display:flex; flex-direction:column; gap:8px; }
+.user-info p { margin:5px 0; color:#555; font-size:0.95rem; border-bottom:1px solid #eee; padding-bottom:5px; }
+.user-info button { margin-top:15px; padding:10px; background-color: var(--danger); color:#fff; border:none; border-radius:4px; cursor:pointer; width:100%; font-size:1rem; }
+.user-info button:hover { background-color: #c82333; }
+
+/* ----------------------------------
+   User pages / components
+   ---------------------------------- */
+.user-container { max-width:1000px; margin:0 auto; padding:20px; font-family: var(--content-font); }
+.user-container h1 { margin-bottom:20px; color:#333; border-bottom:2px solid #eee; padding-bottom:10px; }
+.not-authenticated { text-align:center; margin-top:50px; }
+.accept-invite-section { max-width:400px; margin:30px auto; padding:25px; background:#fff; border-radius:8px; box-shadow:0 2px 10px rgba(0,0,0,0.1); text-align:left; }
+.accept-invite-section h3 { margin-top:0; color:var(--primary); }
+
+.invite-section { margin-bottom:20px; display:flex; justify-content:flex-end; }
+
+.users-list { background:#fff; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.1); overflow:hidden; }
+.users-list h2 { padding:15px 20px; margin:0; background-color:#f8f9fa; border-bottom:1px solid #eee; font-size:1.2rem; }
+.users-list { overflow-x:auto; }
+.users-table { width:100%; border-collapse:collapse; min-width:600px; }
+.users-table th, .users-table td { padding:12px 15px; text-align:left; border-bottom:1px solid #eee; }
+.users-table th { background-color:#f1f1f1; font-weight:600; color:#444; }
+.users-table tr:hover { background-color:#fafafa; }
+
+.action-buttons { display:flex; gap:10px; }
+.status-button { padding:6px 12px; font-size:13px; border:1px solid #ced4da; background:#fff; border-radius:4px; cursor:pointer; color:#495057; transition:all 0.2s; }
+.status-button:hover:not(:disabled) { background-color:#e2e6ea; border-color:#adb5bd; }
+.delete-button { padding:6px 12px; font-size:13px; border:1px solid #f5c6cb; background:#fff; color:var(--danger); border-radius:4px; cursor:pointer; transition:all 0.2s; }
+.delete-button:hover:not(:disabled) { background-color:var(--danger); color:#fff; }
+
+/* ----------------------------------
+   Task pages / components
+   ---------------------------------- */
+.task-container { max-width:1000px; margin:0 auto; padding:20px; font-family: var(--content-font); }
+.task-container h1 { color:#333; border-bottom:2px solid #eee; padding-bottom:10px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center; }
+.create-button { background-color: var(--success); color:white; padding:10px 20px; border:none; border-radius:4px; cursor:pointer; font-size:1rem; font-weight:600; transition:background-color 0.2s; float:right; margin-bottom:15px; }
+.create-button:hover { background-color:#218838; }
+
+.tasks-table { width:100%; border-collapse:collapse; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,0.1); border-radius:8px; overflow:hidden; margin-top:10px; }
+.tasks-table th, .tasks-table td { padding:15px; text-align:left; border-bottom:1px solid #eee; }
+.tasks-table th { background-color:#f8f9fa; font-weight:600; color:#444; }
+.tasks-table tr:hover { background-color:#fafafa; }
+.tasks-table select { padding:5px; border-radius:4px; border:1px solid #ccc; background:#fff; cursor:pointer; }
+.tasks-table select:disabled { background:#eee; cursor:wait; }
+.tasks-table td button { padding:6px 12px; margin-right:5px; border:none; border-radius:4px; cursor:pointer; font-size:0.9rem; transition:opacity 0.2s; }
+.tasks-table td button:first-of-type { background-color:var(--primary); color:#fff; }
+.tasks-table td button:last-of-type { background-color:var(--danger); color:#fff; }
+.tasks-table td button:hover { opacity:0.9; }
+
+/* User assignment list (checkboxes) */
+.user-list { border:1px solid #eee; padding:10px; border-radius:4px; max-height:150px; overflow-y:auto; background:#f9f9f9; }
+.user-list p { margin:0 0 10px 0; font-weight:600; font-size:0.9rem; color:#555; }
+.user-list label { display:flex; align-items:center; margin-bottom:8px; cursor:pointer; font-size:0.95rem; }
+.user-list input[type="checkbox"] { width:auto; margin-right:10px; cursor:pointer; }
+
+/* ----------------------------------
+   Invite modal adjustments
+   ---------------------------------- */
+.invite-modal .modal-content { padding: 30px; }
+.invite-modal .modal-content button[type="submit"] { width:100%; margin-top:10px; }
+
+/* ----------------------------------
+   Small helpers & responsive
+   ---------------------------------- */
+@media (max-width: 768px) {
+  .tasks-table { display:block; overflow-x:auto; }
+  .tasks-table th, .tasks-table td { white-space:nowrap; }
+}
+
+/* End of file */
